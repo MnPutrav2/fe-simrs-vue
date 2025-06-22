@@ -1,0 +1,9 @@
+:root {
+    --background-color:  rgb(23, 23, 23);
+    --menu-color:  rgb(39, 39, 39);
+    --font-color: rgb(235, 245, 255);
+    --font-color-sec: rgb(174, 174, 174);
+    --line-color: white;
+    --line-color-transparent: rgba(255, 255, 255, 0.24);
+    --scroll-color: black transparent;
+}
