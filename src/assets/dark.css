@@ -1,5 +1,6 @@
 :root {
     --background-color:  rgb(23, 23, 23);
+    --background-color-transparent: rgba(138, 138, 138, 0.307);
     --menu-color:  rgb(39, 39, 39);
     --font-color: rgb(235, 245, 255);
     --font-color-sec: rgb(174, 174, 174);

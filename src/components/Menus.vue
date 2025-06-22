@@ -4,6 +4,7 @@ import { onBeforeMount, ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import MedicalRecordMenu from './MedicalRecordMenu.vue'
 import RecipeInput from './Form/RecipeInput.vue'
+import RecipeCompoundInput from './Form/RecipeCompoundInput.vue'
 import { useGlobalMR } from '@/lib/globalData'
 
 const router = useRouter()
@@ -70,14 +71,33 @@ onBeforeMount(async () => {
   </section>
 
   <!-- Menu area -->
-  <RecipeInput style="position: fixed; transition: all 0.2s linear;" :data="globalMR" v-if="activeMenu === 'resep'">
-    <button @click="toggleMenu('resep')">{{ globalMR }}</button>
-  </RecipeInput>
+   <RecipeInput style="position: fixed; transition: all 0.2s linear;" :data="globalMR" v-if="activeMenu === 'resep'">
+      <template #btn-close>
+        <button class="act" @click="toggleMenu('resep')">X</button>
+      </template>
+    </RecipeInput>
+
+    <RecipeCompoundInput style="position: fixed; transition: all 0.2s linear;" :data="globalMR" v-if="activeMenu === 'resep-racik'">
+      <template #btn-close>
+        <button class="act" @click="toggleMenu('resep-racik')">X</button>
+      </template>
+    </RecipeCompoundInput>
   <!-- Menu area -->
 
   <slot></slot>
   <MedicalRecordMenu v-if="route.path == '/ambulatory-care'">
-    <button style="background-color: transparent; color: var(--font-color); border: none;" @click="toggleMenu('resep')">Input Resep</button>
+    <div style="margin-bottom: 1rem;">
+      <p style="margin-bottom: 0.5rem;">{{ globalMR == '' ? 'Pilih pasien' : globalMR }}</p>
+      <hr>
+    </div>
+    <template v-if="globalMR != ''">
+      <div>
+        <button style="background-color: transparent; color: var(--font-color); border: none;" @click="toggleMenu('resep')">Input Resep</button>
+      </div>
+      <div style="margin-top: 1rem;">
+        <button style="background-color: transparent; color: var(--font-color); border: none;" @click="toggleMenu('resep-racik')">Input Resep Racikan</button>
+      </div>
+    </template>
   </MedicalRecordMenu>
 </template>
 
@@ -90,6 +110,14 @@ onBeforeMount(async () => {
   cursor: pointer;
   color: var(--font-color-sec);
   border: none;
+}
+
+.act {
+  width: 100%;
+  height: 100%;
+  background-color: transparent;
+  border: none;
+  color: var(--font-color);
 }
 
 .menu-button-active {

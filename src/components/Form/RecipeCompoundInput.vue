@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { getDrugData } from '@/lib/api/pharmacy';
-import { reactive, ref } from 'vue';
+import { nextTick, reactive, ref, type HtmlHTMLAttributes } from 'vue';
 
 const props = defineProps(['data'])
 
@@ -36,38 +36,6 @@ const recipes = ref<Recipe[]>([])
 
 const drugs = ref<Drug[]>([])
 
-const valMap = reactive<Record<string, number>>({})
-const useMap = reactive<Record<string, string>>({})
-const embalmingMap = reactive<Record<string, number>>({})
-const tuslahMap = reactive<Record<string, number>>({})
-
-function removeRecipe(id: string) {
-  recipes.value = recipes.value.filter(r => r.id !== id)
-}
-
-function handleAddDrug(data: Drug) {
-  const value = valMap[data.id] || 0
-  const use = useMap[data.id] || ''
-  const embalming = embalmingMap[data.id] || 0
-  const tuslah = tuslahMap[data.id] || 0
-
-  const recipe: Recipe = {
-    id: data.id,
-    name: data.name,
-    value,
-    use,
-    embalming,
-    tuslah,
-  }
-
-  recipes.value.push(recipe)
-
-  valMap[data.id] = 0
-  useMap[data.id] = ''
-  embalmingMap[data.id] = 0
-  tuslahMap[data.id] = 0
-}
-
 const recipeRequest = reactive<RecipeRequest>({
   care_number: props.data,
   recipe_number: "",
@@ -97,10 +65,90 @@ async function handleGetDrugData() {
   }
 }
 
+// NEW
+
+interface DrugRecipeCompound {
+  name: string;
+  value: number;
+  embalming: number;
+  tuslah: number;
+}
+
+interface RecipeCompound {
+  name: string;
+  value: number;
+  use: string;
+  drug: DrugRecipeCompound[]
+}
+
+const pages = ref<HTMLElement | null>()
+function scroll() {
+  pages.value?.scrollIntoView({behavior: "smooth"})
+}
+
+function handleInputObat(index: number, name: string, value: number) {
+  indexData.value = index
+  indexName.value = name
+  indexValue.value = value
+
+  nextTick(() => {
+    scroll()
+  })
+}
+
+const recipeCompounds = ref<RecipeCompound[]>([])
+const recipeCompound = ref<RecipeCompound>({
+  name: "",
+  value: 0,
+  use: "",
+  drug: []
+})
+
+function removeRecipeCompound(id: string) {
+  recipeCompounds.value = recipeCompounds.value.filter(r => r.name !== id)
+
+  indexName.value = null
+}
+
+function handleCreateRecipeCompound() {
+  recipeCompounds.value.push({...recipeCompound.value})
+
+  recipeCompound.value = {
+    name: "",
+    value: 0,
+    use: "",
+    drug: []
+  }
+}
+
+function drugRec(capacity: number, fill: number, content: number): number {
+  const data: number = content / capacity * fill
+
+  return Math.round(data)
+}
+
+const indexData = ref<number>(0)
+const indexName = ref<string | null>(null)
+const indexValue = ref<number>(0)
+
+const valMap = reactive<Record<string, number>>({})
+const embalmingMap = reactive<Record<string, number>>({})
+const tuslahMap = reactive<Record<string, number>>({})
+
+function handleAddDrugCompound(id: Drug) {
+  const value = valMap[id.id] || 0
+  const embalming = embalmingMap[id.id] || 0
+  const tuslah = tuslahMap[id.id] || 0
+
+  const res = drugRec(id.capacity, indexValue.value, value)
+
+  recipeCompounds.value[indexData.value].drug.push({name: id.name, value: res, embalming: embalming, tuslah: tuslah})
+}
+
 </script>
 
 <template>
-  <section class="container center">
+  <section class="container center" >
     <div class="cover2 scroll">
       <div class="close-btn center">
         <slot name="btn-close"></slot>
@@ -126,10 +174,37 @@ async function handleGetDrugData() {
         </form>
       </div>
 
-      <h4>Resep Obat</h4>
+      <h4>Resep Obat Racikan</h4>
+
+      <div style="padding-top: 2rem; padding-bottom: 2rem;">
+        <form class="form-data-custom" v-on:submit.prevent="handleCreateRecipeCompound">
+          <div class="center" style="justify-content: flex-start; align-items: flex-end; padding-left: 1rem;">
+            <div style="padding: 0.5rem;">
+              <div style="margin-bottom: 0.5rem;">
+                <label for="nr">Nama racikan</label>
+              </div>
+              <input type="text" id="nr" v-model="recipeCompound.name" placeholder="no rawat">
+            </div>
+            <div style="padding: 0.5rem;">
+              <div style="margin-bottom: 0.5rem;">
+                <label for="xx">Jumlah</label>
+              </div>
+              <input type="number" id="xx" v-model="recipeCompound.value" placeholder="jumlah">
+            </div>
+            <div style="padding: 0.5rem;">
+              <div style="margin-bottom: 0.5rem;">
+                <label for="d">Aturan pakai</label>
+              </div>
+              <input type="text" id="d" v-model="recipeCompound.use" placeholder="pakai">
+            </div>
+            <button>Save</button>
+          </div>
+        </form>
+      </div>
+
+      <hr>
 
       <div style="width: 100%; height: 15rem; margin-top: 1rem;" class="scroll">
-        <hr>
         <table class="table-custom">
           <thead>
             <tr>
@@ -137,29 +212,45 @@ async function handleGetDrugData() {
               <td>Nama</td>
               <td>Jumlah</td>
               <td>Aturan pakai</td>
-              <td>Embalase</td>
-              <td>Tuslah</td>
+              <td>Obat</td>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="rec in recipes" :key="rec.id">
+            <tr v-for="(rec, index) in recipeCompounds" :key="rec.name">
               <td>
-                <button class="button-action" @click="removeRecipe(rec.id)">Delete</button>
+                <button class="button-action" @click="removeRecipeCompound(rec.name)">Delete</button>
+                <button class="button-action" @click="handleInputObat(index, rec.name, rec.value)">Input obat</button>
               </td>
               <td>{{ rec.name }}</td>
               <td>{{ rec.value }}</td>
               <td>{{ rec.use }}</td>
-              <td>{{ rec.embalming }}</td>
-              <td>{{ rec.tuslah }}</td>
+              <td>
+                <table>
+                  <tbody>
+                    <tr v-for="drug in rec.drug" :key="drug.name">
+                      <td>{{ drug.name }}</td>
+                      <td>{{ drug.value }}</td>
+                      <td>{{ drug.embalming }}</td>
+                      <td>{{ drug.tuslah }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      <div style="padding-top: 2rem; padding-bottom: 2rem;">
+      <div ref="pages" style="padding-top: 2rem; padding-bottom: 2rem;" v-if="recipeCompounds.length != 0 && indexName != null">
         <form class="form-data-custom" v-on:submit.prevent="handleGetDrugData">
           <h4 style="margin: 0.5rem; color: var(--font-color-sec);">Cari Obat</h4>
           <div class="center" style="justify-content: flex-start; align-items: flex-end; padding-left: 1rem;">
+            <div style="padding: 0.5rem;">
+              <div style="margin-bottom: 0.5rem;">
+                <label for="nm">Nama racikan</label>
+              </div>
+              <input type="text" id="ns" v-model="indexName" readonly placeholder="Nama obat">
+            </div>
             <div style="padding: 0.5rem;">
               <div style="margin-bottom: 0.5rem;">
                 <label for="dt1">Nama obat</label>
@@ -171,15 +262,17 @@ async function handleGetDrugData() {
         </form>
       </div>
 
-      <div style="width: 100%; height: 15rem" class="scroll">
-        <hr>
+      <hr>
+
+      <div style="width: 100%; height: 15rem" class="scroll anim-slide" v-if="recipeCompounds.length != 0 && indexName != null">
         <table class="table-custom">
           <thead>
             <tr>
               <td>Action</td>
               <td>Nama</td>
+              <td>Kapasitas</td>
+              <td>Kandungan</td>
               <td>Jumlah</td>
-              <td>Aturan pakai</td>
               <td>Embalase</td>
               <td>Tuslah</td>
             </tr>
@@ -187,14 +280,15 @@ async function handleGetDrugData() {
           <tbody>
             <tr v-for="rec in drugs" :key="rec.id">
               <td>
-                <button class="button-action" @click="handleAddDrug(rec)">Add</button>
+                <button class="button-action" @click="handleAddDrugCompound(rec)">Add</button>
               </td>
               <td>{{ rec.name }}</td>
+              <td>{{ rec.capacity }}</td>
               <td>
-                <input type="number" v-model.number="valMap[rec.id]" />
+                <input type="number" v-model="valMap[rec.id]" />
               </td>
               <td>
-                <input type="text" v-model="useMap[rec.id]" />
+                <p>{{ drugRec(rec.capacity, indexValue, valMap[rec.id]) }}</p>
               </td>
               <td>
                 <input type="number" v-model="embalmingMap[rec.id]" />
