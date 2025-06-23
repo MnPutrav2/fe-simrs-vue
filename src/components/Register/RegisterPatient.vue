@@ -2,38 +2,34 @@
 import { district, province, regencie, village } from '@/lib/api/address';
 import { createPatient, deletePatient, getCurrentMedicalRecord, getPatient, updatePatient } from '@/lib/api/patient';
 import { medicalRecord } from '@/lib/medicalRecordFormat';
-import router from '@/router';
 import { onBeforeMount, reactive, ref, watch } from 'vue'
+import type { Patient } from '@/types/patient';
 
-interface PatientData {
-  medical_record: string;
-  name: string;
-  gender: string;
-  wedding: string;
-  religion: string;
-  education: string;
-  birth_place: string;
-  birth_date: string;
-  work: string;
-  address: string;
-  village: number;
-  district: number;
-  regencie: number;
-  province: number;
-  nik: string;
-  bpjs: string;
-  phone_number: string;
-  parent_name: string;
-  relationship: string;
-  parent_gender: string;
-}
-
-interface Address {
-  id: number;
-  name: string;
-}
-
-const patientData: PatientData = reactive({
+// Define variabels
+const search = ref<string>("")
+const limit = ref<number>(5)
+const patientDatas = ref<Patient[]>([])
+const token: string | null = localStorage.getItem('token')
+const mr = ref<string>("")
+const edits = ref<HTMLElement | null>()
+const editAction = ref<boolean>(false)
+const provincesDataSearch = ref<Address[]>([])
+const findProvince = ref<string>("")
+const provinceOpen = ref<boolean>(false)
+const provinces = ref<Address[]>([])
+const regencieDataSearch = ref<Address[]>([])
+const findRegencie = ref<string>("")
+const regencieOpen = ref<boolean>(false)
+const regencies = ref<Address[]>([])
+const districtDataSearch = ref<Address[]>([])
+const findDistrict = ref<string>("")
+const districtOpen = ref<boolean>(false)
+const districts = ref<Address[]>([])
+const villageDataSearch = ref<Address[]>([])
+const findVillage = ref<string>("")
+const villageOpen = ref<boolean>(false)
+const villages = ref<Address[]>([])
+const patientData: Patient = reactive({
   medical_record: '',
   name: '',
   gender: '',
@@ -56,7 +52,14 @@ const patientData: PatientData = reactive({
   parent_gender: ''
 });
 
-function sanitizePatientData(data: PatientData): PatientData {
+// External type
+interface Address {
+  id: number;
+  name: string;
+}
+
+// Define functions
+function sanitizePatientData(data: Patient): Patient {
   return {
     ...data,
     province: Number(data.province),
@@ -66,14 +69,67 @@ function sanitizePatientData(data: PatientData): PatientData {
   };
 }
 
-const search = ref<string>("")
-const limit = ref<number>(5)
-const patientDatas = ref<PatientData[]>([])
-const token: string | null = localStorage.getItem('token')
-const mr = ref<string>("")
-const edits = ref<HTMLElement | null>()
-const editAction = ref<boolean>(false)
+async function edit(patient: Patient) {
+  edits.value?.scrollIntoView({behavior: 'smooth'})
 
+  Object.assign(patientData, patient)
+}
+
+function saveProvince(prov: Address) {
+  patientData.province = prov.id
+  findProvince.value = prov.name
+  provinceOpen.value = false
+  provincesDataSearch.value = []
+}
+
+function saveRegencie(reg: Address) {
+  patientData.regencie = reg.id,
+  findRegencie.value = reg.name
+  regencieOpen.value = false
+  regencieDataSearch.value = []
+}
+
+function saveDistrict(dis: Address) {
+  patientData.district = dis.id,
+  findDistrict.value = dis.name
+  districtOpen.value = false
+  districtDataSearch.value = []
+}
+
+function saveVillage(vil: Address) {
+  patientData.village = vil.id,
+  findVillage.value = vil.name
+  villageOpen.value = false
+  villageDataSearch.value = []
+}
+
+async function resetForm() {
+  await handleGetmedicalRecord(token)
+
+  editAction.value = false
+
+  patientData.name = '',
+  patientData.gender = '',
+  patientData.wedding = '',
+  patientData.religion = '',
+  patientData.education = '',
+  patientData.birth_place = '',
+  patientData.birth_date = '',
+  patientData.work = '',
+  patientData.address = '',
+  patientData.village = 0,
+  patientData.district = 0,
+  patientData.regencie = 0,
+  patientData.province = 0,
+  patientData.nik = '',
+  patientData.bpjs = '',
+  patientData.phone_number = '',
+  patientData.parent_name = '',
+  patientData.relationship = '',
+  patientData.parent_gender = ''
+}
+
+// Handler functions
 async function handleCreatePatientData() {
   const response = await createPatient(token, sanitizePatientData(patientData))
   const json = await response.json()
@@ -140,12 +196,6 @@ async function handleDeletePatient(mr: string) {
   }
 }
 
-async function edit(patient: PatientData) {
-  edits.value?.scrollIntoView({behavior: 'smooth'})
-
-  Object.assign(patientData, patient)
-}
-
 async function handleUpdatePatient() {
   const response = await updatePatient(token, sanitizePatientData(patientData), mr.value)
   const json = await response.json()
@@ -164,184 +214,6 @@ async function handleUpdatePatient() {
     console.log(error)
   }
 }
-
-async function resetForm() {
-  await handleGetmedicalRecord(token)
-
-  editAction.value = false
-
-  patientData.name = '',
-  patientData.gender = '',
-  patientData.wedding = '',
-  patientData.religion = '',
-  patientData.education = '',
-  patientData.birth_place = '',
-  patientData.birth_date = '',
-  patientData.work = '',
-  patientData.address = '',
-  patientData.village = 0,
-  patientData.district = 0,
-  patientData.regencie = 0,
-  patientData.province = 0,
-  patientData.nik = '',
-  patientData.bpjs = '',
-  patientData.phone_number = '',
-  patientData.parent_name = '',
-  patientData.relationship = '',
-  patientData.parent_gender = ''
-}
-
-// Find Province
-
-const provincesDataSearch = ref<Address[]>([])
-const findProvince = ref<string>("")
-const provinceOpen = ref<boolean>(false)
-const provinces = ref<Address[]>([])
-watch(() => findProvince.value, () => {
-  provinceOpen.value = true
-  const query = findProvince.value.toLowerCase();
-  const results = provinces.value.filter(u =>
-    u.name.toLowerCase().includes(query)
-  );
-
-  provincesDataSearch.value = results;
-});
-
-function saveProvince(prov: Address) {
-  patientData.province = prov.id
-  findProvince.value = prov.name
-  provinceOpen.value = false
-  provincesDataSearch.value = []
-}
-
-watch(() => patientData.address, async () => {
-  const response = await province()
-  const json = await response.json()
-
-  try {
-    if (response.status === 200) {
-      provinces.value = json
-    } else {
-      console.log(response.status)
-    }
-  } catch(error) {
-    console.log(error)
-  }
-})
-
-// Find regencie
-
-const regencieDataSearch = ref<Address[]>([])
-const findRegencie = ref<string>("")
-const regencieOpen = ref<boolean>(false)
-const regencies = ref<Address[]>([])
-watch(() => findRegencie.value, () => {
-  regencieOpen.value = true
-  const query = findRegencie.value.toLowerCase();
-  const results = regencies.value.filter(u =>
-    u.name.toLowerCase().includes(query)
-  );
-
-  regencieDataSearch.value = results;
-});
-
-function saveRegencie(reg: Address) {
-  patientData.regencie = reg.id,
-  findRegencie.value = reg.name
-  regencieOpen.value = false
-  regencieDataSearch.value = []
-}
-
-watch(() => patientData.province, async () => {
-  const response = await regencie(patientData.province)
-  const json = await response.json()
-
-  try {
-    if (response.status === 200) {
-      regencies.value = json
-    } else {
-      console.log(response.status)
-    }
-  } catch(error) {
-    console.log(error)
-  }
-})
-
-// Find regencie
-
-const districtDataSearch = ref<Address[]>([])
-const findDistrict = ref<string>("")
-const districtOpen = ref<boolean>(false)
-const districts = ref<Address[]>([])
-watch(() => findDistrict.value, () => {
-  districtOpen.value = true
-  const query = findDistrict.value.toLowerCase();
-  const results = districts.value.filter(u =>
-    u.name.toLowerCase().includes(query)
-  );
-
-  districtDataSearch.value = results;
-});
-
-function saveDistrict(dis: Address) {
-  patientData.district = dis.id,
-  findDistrict.value = dis.name
-  districtOpen.value = false
-  districtDataSearch.value = []
-}
-
-watch(() => patientData.regencie, async () => {
-  const response = await district(patientData.regencie)
-  const json = await response.json()
-
-  try {
-    if (response.status === 200) {
-      districts.value = json
-    } else {
-      console.log(response.status)
-    }
-  } catch(error) {
-    console.log(error)
-  }
-})
-
-// Find village
-
-const villageDataSearch = ref<Address[]>([])
-const findVillage = ref<string>("")
-const villageOpen = ref<boolean>(false)
-const villages = ref<Address[]>([])
-watch(() => findVillage.value, () => {
-  villageOpen.value = true
-  const query = findVillage.value.toLowerCase();
-  const results = villages.value.filter(u =>
-    u.name.toLowerCase().includes(query)
-  );
-
-  villageDataSearch.value = results;
-});
-
-function saveVillage(vil: Address) {
-  patientData.village = vil.id,
-  findVillage.value = vil.name
-  villageOpen.value = false
-  villageDataSearch.value = []
-}
-
-watch(() => patientData.district, async () => {
-  const response = await village(patientData.district)
-  const json = await response.json()
-
-  try {
-    if (response.status === 200) {
-      villages.value = json
-    } else {
-      console.log(response.status)
-    }
-  } catch(error) {
-    console.log(error)
-  }
-})
 
 async function handleGetmedicalRecord(token: string | null) {
   const response = await getCurrentMedicalRecord(token)
@@ -365,6 +237,108 @@ async function handleGetmedicalRecord(token: string | null) {
   return mr.value
 }
 
+// Watcher
+watch(() => findProvince.value, () => {
+  provinceOpen.value = true
+  const query = findProvince.value.toLowerCase();
+  const results = provinces.value.filter(u =>
+    u.name.toLowerCase().includes(query)
+  );
+
+  provincesDataSearch.value = results;
+});
+
+watch(() => patientData.address, async () => {
+  const response = await province()
+  const json = await response.json()
+
+  try {
+    if (response.status === 200) {
+      provinces.value = json
+    } else {
+      console.log(response.status)
+    }
+  } catch(error) {
+    console.log(error)
+  }
+})
+
+watch(() => findRegencie.value, () => {
+  regencieOpen.value = true
+  const query = findRegencie.value.toLowerCase();
+  const results = regencies.value.filter(u =>
+    u.name.toLowerCase().includes(query)
+  );
+
+  regencieDataSearch.value = results;
+});
+
+watch(() => patientData.province, async () => {
+  const response = await regencie(patientData.province)
+  const json = await response.json()
+
+  try {
+    if (response.status === 200) {
+      regencies.value = json
+    } else {
+      console.log(response.status)
+    }
+  } catch(error) {
+    console.log(error)
+  }
+})
+
+watch(() => findDistrict.value, () => {
+  districtOpen.value = true
+  const query = findDistrict.value.toLowerCase();
+  const results = districts.value.filter(u =>
+    u.name.toLowerCase().includes(query)
+  );
+
+  districtDataSearch.value = results;
+});
+
+watch(() => patientData.regencie, async () => {
+  const response = await district(patientData.regencie)
+  const json = await response.json()
+
+  try {
+    if (response.status === 200) {
+      districts.value = json
+    } else {
+      console.log(response.status)
+    }
+  } catch(error) {
+    console.log(error)
+  }
+})
+
+watch(() => findVillage.value, () => {
+  villageOpen.value = true
+  const query = findVillage.value.toLowerCase();
+  const results = villages.value.filter(u =>
+    u.name.toLowerCase().includes(query)
+  );
+
+  villageDataSearch.value = results;
+});
+
+watch(() => patientData.district, async () => {
+  const response = await village(patientData.district)
+  const json = await response.json()
+
+  try {
+    if (response.status === 200) {
+      villages.value = json
+    } else {
+      console.log(response.status)
+    }
+  } catch(error) {
+    console.log(error)
+  }
+})
+
+// Before page view
 onBeforeMount(async () => {
   await handleGetPatient()
   await handleGetmedicalRecord(token)

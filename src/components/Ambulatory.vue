@@ -5,75 +5,10 @@ import { formatDate, formatDatetime } from '@/lib/formatDate';
 import { useGlobalMR } from '@/lib/globalData';
 import { resetForm } from '@/lib/resetForm';
 import { onBeforeMount, reactive, ref } from 'vue';
+import type { RegistrationData } from '@/types/register';
+import type { AmbulatoryCareRequest, AmbulatoryCare, AmbulatoryCareRequestUpdate } from '@/types/ambulatory';
 
-interface AmbulatoryCareResponse {
-  care_number: string
-  medical_record: string
-  name: string
-  date: string
-  body_temperature: number
-  tension: string
-  pulse: number
-  respiration: number
-  height: number
-  weight: number
-  spo2: number
-  gcs: number
-  awareness: string
-  complaint: string
-  examination: string
-  allergy: string
-  followup: string
-  assessment: string
-  instructions: string
-  evaluation: string
-  officer: string
-  officer_name: string
-}
-
-interface AmbulatoryCare {
-  care_number: string
-  medical_record: string
-  date: string
-  body_temperature: number
-  tension: string
-  pulse: number
-  respiration: number
-  height: number
-  weight: number
-  spo2: number
-  gcs: number
-  awareness: string
-  complaint: string
-  examination: string
-  allergy: string
-  followup: string
-  assessment: string
-  instructions: string
-  evaluation: string
-  officer: string
-}
-
-interface AmbulatoryCareUpdate {
-  care_number: string;
-  date: string;
-  data: AmbulatoryCare
-}
-
-interface RegistrationData {
-  care_number: string;
-  register_number: string;
-  register_date: string;
-  medical_record: string;
-  name: string;
-  gender: string;
-  payment_method: string;
-  policlinic_id: string;
-  policlinic_name: string;
-  doctor_id: string;
-  doctor_name: string;
-}
-
+// Define variabels
 const user = defineProps(['data'])
 const gl = new Date()
 const token = localStorage.getItem('token')
@@ -86,11 +21,12 @@ const pages = ref<HTMLElement | null>()
 const searchAmbulatory = ref<string | null>("")
 const dateSearch1 = ref<string>(formatDatetime(gl, "00:00"))
 const dateSearch2 = ref<string>(formatDatetime(gl, "23:59"))
-const ambulatoryDatas = ref<AmbulatoryCareResponse[]>([])
+const ambulatoryDatas = ref<AmbulatoryCare[]>([])
 const editAction = ref<boolean>(false)
 const bool = ref<boolean>(false)
 const dateForEdit = ref<string>('')
-
+const { globalMR } = useGlobalMR()
+let inter = setInterval(updateTime, 1000)
 const officers = [
   {
     id: "EMP001",
@@ -101,8 +37,7 @@ const officers = [
     name: "AGUS"
   },
 ]
-
-const ambulatoryData = reactive<AmbulatoryCare>({
+const ambulatoryData = reactive<AmbulatoryCareRequest>({
   care_number: '',
   medical_record: '',
   date: '',
@@ -125,11 +60,11 @@ const ambulatoryData = reactive<AmbulatoryCare>({
   officer: user.data.id
 })
 
+// Define functions
 function updateTime() {
   ambulatoryData.date = formatDatetime(new Date(), null)
 }
 
-let inter = setInterval(updateTime, 1000)
 function autoDate(bool: boolean) {
   if (bool) {
     clearInterval(inter)
@@ -138,6 +73,7 @@ function autoDate(bool: boolean) {
   }
 }
 
+// Handler functions
 async function handleCreateAmbulatory() {
   const response = await createAmbulatoryCare(token, ambulatoryData)
   const json = await response.json()
@@ -196,7 +132,7 @@ async function handleGetRegister() {
   }
 }
 
-function handleEditAmbulatory(amb: AmbulatoryCareResponse) {
+function handleEditAmbulatory(amb: AmbulatoryCare) {
   pages.value?.scrollIntoView({behavior: "smooth"})
 
   const {officer_name, ...filter} = amb
@@ -220,7 +156,7 @@ async function handleDeleteAmbulatory(careNum: string, date: string) {
 }
 
 async function handleUpdateAmbulatory(careNum: string, date: string) {
-  const data = ref<AmbulatoryCareUpdate>({
+  const data = ref<AmbulatoryCareRequestUpdate>({
     care_number: careNum,
     date: date,
     data: ambulatoryData
@@ -241,12 +177,11 @@ async function handleUpdateAmbulatory(careNum: string, date: string) {
   }
 }
 
-const { globalMR } = useGlobalMR()
-
 function handleGlobalMr(data: string) {
   globalMR.value = data
 }
 
+// Before page view
 onBeforeMount(async () => {
   await handleGetRegister()
 })
@@ -577,7 +512,7 @@ onBeforeMount(async () => {
           <tr v-for="reg in registerDatas" :key="reg.care_number">
             <td>
               <button class="button-action" @click="handleInputAmbulatory(reg.care_number, reg.medical_record)">Input</button>
-              <button class="button-action" @click="handleGlobalMr(reg.care_number)">RM</button>
+              <button class="button-action" @click="handleGlobalMr(reg.care_number)">Menu</button>
             </td>
             <td>{{ reg.care_number }}</td>
             <td>{{ reg.medical_record }}</td>

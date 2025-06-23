@@ -5,7 +5,7 @@ import { useRouter, useRoute } from 'vue-router'
 import MedicalRecordMenu from './MedicalRecordMenu.vue'
 import RecipeInput from './Form/RecipeInput.vue'
 import RecipeCompoundInput from './Form/RecipeCompoundInput.vue'
-import { useGlobalMR } from '@/lib/globalData'
+import { clearGlobalMR, useGlobalMR } from '@/lib/globalData'
 
 const router = useRouter()
 const route = useRoute()
@@ -45,6 +45,8 @@ function handlePath() {
   if (route.path !== '/' && !pathData.value.find(p => p.path === route.path)) {
     router.push('/')
   }
+
+  clearGlobalMR()
 }
 
 const activeMenu = ref<string | null>(null)

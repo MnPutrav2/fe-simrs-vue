@@ -1,56 +1,9 @@
 <script setup lang="ts">
 import { createDrugData, deleteDrugData, getDistributor, getDrugData, updateDrugData } from '@/lib/api/pharmacy';
 import { onBeforeMount, reactive, ref } from 'vue';
+import type { DrugData, Distributor, ResponseDrugData, RequestBodyDrugDataUpdate } from '@/types/pharmacy';
 
-
-interface DrugData {
-  id: string;
-  name: string;
-  distributor: string;
-  capacity: number;
-  fill: number;
-  unit: string;
-  category: string;
-  price: number;
-  expired_date: string;
-}
-
-interface Distributor {
-  id: string;
-  name: string;
-  address: string;
-}
-
-interface RequestBodyDrugDataUpdate {
-  id: string;
-  data: DrugData;
-}
-
-interface ResponseDrugData {
-  id: string;
-  name: string;
-  distributor_id: string;
-  distributor: string;
-  capacity: number;
-  fill: number;
-  unit: string;
-  category: string;
-  price: number;
-  expired_date: string;
-}
-
-const drug = reactive<DrugData>({
-  id: "",
-  name: "",
-  distributor: "",
-  capacity: 0,
-  fill: 0,
-  unit: "",
-  category: "",
-  price: 0,
-  expired_date: "",
-})
-
+// Define variabels
 const token: string | null = localStorage.getItem('token')
 const search = ref<string>("")
 const limit = ref<number>(5)
@@ -58,7 +11,21 @@ const drugDatas = ref<ResponseDrugData[]>([])
 const pages = ref<HTMLElement | null>()
 const bool = ref<boolean>(false)
 const distributors = ref<Distributor[]>([])
+const drug = reactive<DrugData>({
+  id: "",
+  name: "",
+  distributor: "",
+  capacity: 0,
+  fill: 0,
+  unit: "",
+  composition: "",
+  category: "",
+  price: 0,
+  expired_date: "",
+})
 
+// Define functions
+// Handler functions
 async function handleCreateDrugData() {
   const response = await createDrugData(token, drug)
   const json = await response.json()
@@ -161,6 +128,7 @@ async function handleGetDistributor() {
   }
 }
 
+// Before view page
 onBeforeMount(async ()=> {
   await handleGetDrugData()
   await handleGetDistributor()
@@ -219,6 +187,14 @@ onBeforeMount(async ()=> {
               <option value="mg">MG</option>
               <option value="ml">ML</option>
             </select>
+          </div>
+
+          <div class="input-field">
+            <div class="cover">
+              <label for="com">Isi/Box</label>
+            </div>
+            <span style="padding-right: 0.5rem;">:</span>
+            <input type="text" id="com" placeholder="komposisi" v-model="drug.composition" required>
           </div>
 
           <div class="input-field">
@@ -297,6 +273,7 @@ onBeforeMount(async ()=> {
             <td>Action</td>
             <td>Kode</td>
             <td>Nama</td>
+            <td>Komposisi</td>
             <td>Distributor</td>
             <td>kapasitas</td>
             <td>Isi/box</td>
@@ -315,6 +292,7 @@ onBeforeMount(async ()=> {
             </td>
             <td>{{ drug.id }}</td>
             <td>{{ drug.name }}</td>
+            <td>{{ drug.composition }}</td>
             <td>{{ drug.distributor }}</td>
             <td>{{ drug.capacity }}</td>
             <td>{{ drug.fill }}</td>

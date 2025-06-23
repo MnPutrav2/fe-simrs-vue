@@ -1,50 +1,38 @@
 <script setup lang="ts">
-import { getDrugData } from '@/lib/api/pharmacy';
-import { reactive, ref } from 'vue';
+import { createRecipe, getDrugData } from '@/lib/api/pharmacy';
+import { computed, reactive, ref } from 'vue';
+import { sum, loopSum } from '@/lib/drugSum';
+import { formatDatetime } from '@/lib/formatDate';
+import type { Recipe, RecipeForRequest, Drug, RecipesForRequest } from '@/types/pharmacy';
 
+// Define variabels
 const props = defineProps(['data'])
-
-interface Recipe {
-  id: string;
-  name: string;
-  value: number;
-  use:string;
-  embalming:number;
-  tuslah:number;
-}
-
-interface Drug {
-  id: string;
-  name: string;
-  distributor_id: string;
-  distributor: string;
-  capacity: number;
-  fill: number;
-  unit: string;
-  category: string;
-  price: number;
-  expired_date: string;
-}
-
-interface RecipeRequest {
-  care_number: string;
-  recipe_number: string;
-  drug: Recipe[]
-}
-
 const recipes = ref<Recipe[]>([])
-
+const recipesForRequest = ref<RecipesForRequest[]>([])
+const recipeType = ref(false)
 const drugs = ref<Drug[]>([])
-
 const valMap = reactive<Record<string, number>>({})
 const useMap = reactive<Record<string, string>>({})
 const embalmingMap = reactive<Record<string, number>>({})
 const tuslahMap = reactive<Record<string, number>>({})
+const date = new Date()
+const searchDrug = ref<string>("")
+const recipeRequest = reactive<RecipeForRequest>({
+  care_number: props.data,
+  recipe_number: "",
+  date: "",
+  validate: formatDatetime(date, "00:00"),
+  handover: formatDatetime(date, "00:00"),
+  type: recipeType.value ? "add" : "create",
+  drug: recipesForRequest.value
+})
 
+// Define functions
 function removeRecipe(id: string) {
   recipes.value = recipes.value.filter(r => r.id !== id)
 }
 
+// Handler functions
 function handleAddDrug(data: Drug) {
   const value = valMap[data.id] || 0
   const use = useMap[data.id] || ''
@@ -58,9 +46,20 @@ function handleAddDrug(data: Drug) {
     use,
     embalming,
     tuslah,
+    price: data.price,
+  }
+
+  const recipeRes: RecipesForRequest = {
+    drug_id: data.id,
+    value,
+    use,
+    embalming,
+    tuslah,
+    total_price: sum(value, data.price, embalming, tuslah),
   }
 
   recipes.value.push(recipe)
+  recipesForRequest.value.push(recipeRes)
 
   valMap[data.id] = 0
   useMap[data.id] = ''
@@ -68,17 +67,22 @@ function handleAddDrug(data: Drug) {
   tuslahMap[data.id] = 0
 }
 
-const recipeRequest = reactive<RecipeRequest>({
-  care_number: props.data,
-  recipe_number: "",
-  drug: recipes.value
-})
+async function handleCreateRecipe() {
+  const response = await createRecipe(localStorage.getItem('token'), recipeRequest)
+  const json = await response.json()
 
-function handleCreateRecipe() {
-  console.log(recipeRequest)
+  try {
+
+    if (response.status === 201) {
+      alert('Resep berhasil dibuat!')
+    }else{
+      alert(json.errors)
+    }
+
+  } catch(error) {
+    console.log(error)
+  }
 }
-
-const searchDrug = ref<string>("")
 
 async function handleGetDrugData() {
   const response = await getDrugData(localStorage.getItem('token'), searchDrug.value, 10)
@@ -121,24 +125,38 @@ async function handleGetDrugData() {
               </div>
               <input type="text" id="ss" v-model="recipeRequest.recipe_number" placeholder="resep">
             </div>
+            <div style="padding: 0.5rem;">
+              <div style="margin-bottom: 0.5rem;">
+                <label for="ck">Timpa resep</label>
+              </div>
+              <input type="checkbox" id="ck" v-model="recipeType" placeholder="resep">
+            </div>
+            <div style="padding: 0.5rem;">
+              <div style="margin-bottom: 0.5rem;">
+                <label for="da">Tanggal resep</label>
+              </div>
+              <input type="datetime-local" id="da" v-model="recipeRequest.date" placeholder="resep">
+            </div>
             <button>Save</button>
           </div>
         </form>
       </div>
 
-      <h4>Resep Obat</h4>
+      <h4 style="margin-bottom: 1rem;">Resep Obat</h4>
+      <hr>
 
       <div style="width: 100%; height: 15rem; margin-top: 1rem;" class="scroll">
-        <hr>
         <table class="table-custom">
           <thead>
             <tr>
               <td>Action</td>
               <td>Nama</td>
               <td>Jumlah</td>
+              <td>Harga/tablet</td>
               <td>Aturan pakai</td>
               <td>Embalase</td>
               <td>Tuslah</td>
+              <td>Total</td>
             </tr>
           </thead>
           <tbody>
@@ -148,13 +166,17 @@ async function handleGetDrugData() {
               </td>
               <td>{{ rec.name }}</td>
               <td>{{ rec.value }}</td>
+              <td>{{ rec.price }}</td>
               <td>{{ rec.use }}</td>
               <td>{{ rec.embalming }}</td>
               <td>{{ rec.tuslah }}</td>
+              <td>{{ sum(rec.price, rec.value, rec.embalming, rec.tuslah) }}</td>
             </tr>
           </tbody>
         </table>
       </div>
+
+      <div style="margin-top: 2rem; margin-left: 2rem;">Total = {{ loopSum(recipes) }}</div>
 
       <div style="padding-top: 2rem; padding-bottom: 2rem;">
         <form class="form-data-custom" v-on:submit.prevent="handleGetDrugData">
@@ -171,8 +193,9 @@ async function handleGetDrugData() {
         </form>
       </div>
 
+      <hr>
+
       <div style="width: 100%; height: 15rem" class="scroll">
-        <hr>
         <table class="table-custom">
           <thead>
             <tr>
@@ -182,6 +205,8 @@ async function handleGetDrugData() {
               <td>Aturan pakai</td>
               <td>Embalase</td>
               <td>Tuslah</td>
+              <td>Komposisi</td>
+              <td>Harga/tablet</td>
             </tr>
           </thead>
           <tbody>
@@ -202,6 +227,8 @@ async function handleGetDrugData() {
               <td>
                 <input type="number" v-model="tuslahMap[rec.id]" />
               </td>
+              <td>{{ rec.composition }}</td>
+              <td>{{ rec.price }}</td>
             </tr>
           </tbody>
         </table>

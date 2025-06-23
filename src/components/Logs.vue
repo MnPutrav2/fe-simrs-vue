@@ -3,6 +3,14 @@ import { logsApi } from '@/lib/api/logs';
 import { formatDatetime } from '@/lib/formatDate';
 import { onBeforeMount, ref } from 'vue';
 
+// Define variabels
+const date = new Date()
+const token: string | null = localStorage.getItem('token')
+const date1 = ref<string>(formatDatetime(date, "01:00:00"))
+const date2 = ref<string>(formatDatetime(date, "23:00:00"))
+const logs = ref<Logs[]>([])
+
+// External type
 interface Logs {
   id: string,
   user: string,
@@ -12,13 +20,7 @@ interface Logs {
   date: string,
 }
 
-const date = new Date()
-
-const token: string | null = localStorage.getItem('token')
-const date1 = ref<string>(formatDatetime(date, "01:00:00"))
-const date2 = ref<string>(formatDatetime(date, "23:00:00"))
-const logs = ref<Logs[]>([])
-
+// Define functions
 async function getLogs() {
   const response = await logsApi(token, date1.value, date2.value)
   const json = await response.json()
@@ -34,6 +36,7 @@ async function getLogs() {
   }
 }
 
+// Before page view
 onBeforeMount(async () => {
   await getLogs()
 })

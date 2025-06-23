@@ -4,25 +4,21 @@ import { onBeforeMount, reactive, ref } from 'vue'
 import { useRouter, type Router } from 'vue-router'
 import { RouterView } from 'vue-router'
 import Menus from '@/components/Menus.vue'
-import PopupMenu from '@/components/PopupMenu.vue'
 import Navbar from '@/components/Navbar.vue'
 
 const router: Router = useRouter()
-
+const open = ref<boolean>(false)
+const token: string | null = localStorage.getItem('token')
 interface userData {
   id: Number,
   name: String,
   gender: String
 }
-
 const userData: userData = reactive({
   id: 0,
   name: '',
   gender: ''
 })
-
-const open = ref<boolean>(false)
-const token: string | null = localStorage.getItem('token')
 
 async function userStatus() {
   if (!token) {

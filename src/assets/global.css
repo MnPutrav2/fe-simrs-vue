@@ -125,6 +125,10 @@ button {
   min-width: 10rem;
 }
 
+.table-custom > tbody > tr:nth-child(odd) {
+  background-color: var(--table-color);
+}
+
 .button-action {
   margin: 0.5rem;
   padding: 0.3rem;

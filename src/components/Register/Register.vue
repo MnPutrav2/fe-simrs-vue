@@ -4,66 +4,10 @@ import { createRegister, deleteRegister, getCurrentCareNumber, getCurrentRegiste
 import { careNumber, regNumber } from '@/lib/careNumber';
 import { formatDate } from '@/lib/formatDate';
 import { onBeforeMount, reactive, ref, watch } from 'vue'
+import type { RegistrationData, RegisterData } from '@/types/register';
+import type { Patient, Doctor } from '@/types/patient';
 
-interface PatientData {
-  medical_record: string;
-  name: string;
-  gender: string;
-  wedding: string;
-  religion: string;
-  education: string;
-  birth_place: string;
-  birth_date: string;
-  work: string;
-  address: string;
-  village: number;
-  district: number;
-  regencie: number;
-  province: number;
-  nik: string;
-  bpjs: string;
-  phone_number: string;
-  parent_name: string;
-  relationship: string;
-  parent_gender: string;
-}
-
-interface RegistrationData {
-  care_number: string;
-  register_number: string;
-  register_date: string;
-  medical_record: string;
-  name: string;
-  gender: string;
-  payment_method: string;
-  policlinic_id: string;
-  policlinic_name: string;
-  doctor_id: string;
-  doctor_name: string;
-}
-
-interface RegisterData {
-  care_number: string;
-  register_number: string;
-  register_date:string;
-  medical_record: string;
-  payment_method:string;
-  policlinic: string;
-  doctor: string;
-}
-
-interface Doctor {
-  id: string;
-  name:  string;
-  specialist: boolean;
-  specialist_name:  string;
-}
-
-interface Common {
-  id: string;
-  name: string;
-}
-
+// Define variabels
 const gl = new Date()
 const token = localStorage.getItem('token')
 const date1 = ref<string>(formatDate(gl))
@@ -72,7 +16,7 @@ const search = ref<string>("")
 const limit = ref<number>(5)
 const search_reg = ref<string>("")
 const limit_reg = ref<number>(5)
-const patientDatas = ref<PatientData[]>([])
+const patientDatas = ref<Patient[]>([])
 const ambulatoryCare = ref<HTMLElement | null>()
 const registerDatas = ref<RegistrationData[]>([])
 const doctors = <Doctor[]>([
@@ -108,9 +52,16 @@ const registerData: RegisterData = reactive({
   policlinic: '',
   doctor: ''
 })
-
 registerData.register_date = formatDate(gl)
 
+// External interface
+interface Common {
+  id: string;
+  name: string;
+}
+
+// Define function
+// Handler functions
 async function handleReg(mr: string) {
   ambulatoryCare.value?.scrollIntoView({behavior: 'smooth'})
 
@@ -209,11 +160,13 @@ async function handleGetCareNumber() {
   }
 }
 
+// Watcher
 watch([() => registerData.register_date, () => registerData.policlinic], async () => {
   await handleGetRegNumber()
   await handleGetCareNumber()
 })
 
+// Before view page
 onBeforeMount(async () => {
   await handleGetRegister()
   await handleGetRegNumber()

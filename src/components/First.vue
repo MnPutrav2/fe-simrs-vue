@@ -1,15 +1,16 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 
+// Define variabels
+const getUserData = defineProps(['data'])
+const userData = ref<userData>(getUserData.data)
 
+// External type
 interface userData {
   id: Number,
   name: String,
   gender: String
 }
-
-const getUserData = defineProps(['data'])
-const userData = ref<userData>(getUserData.data)
 
 </script>
 

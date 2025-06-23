@@ -3,15 +3,15 @@ import { GetAuthToken, UserPages } from '@/lib/api/user'
 import router from '@/router'
 import { reactive } from 'vue'
 
-interface userAccount {
-  username: string,
-  password: string
-}
-
 const userAccount: userAccount = reactive({
   username: "",
   password: ""
 })
+
+interface userAccount {
+  username: string,
+  password: string
+}
 
 async function login() {
   const response = await GetAuthToken(userAccount)
