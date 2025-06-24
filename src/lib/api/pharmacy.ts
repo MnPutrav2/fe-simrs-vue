@@ -1,39 +1,4 @@
-interface DrugData {
-  id: string;
-  name: string;
-  distributor: string;
-  capacity: number;
-  fill: number;
-  unit: string;
-  composition:string;
-  category: string;
-  price: number;
-  expired_date: string;
-}
-
-interface RequestBodyDrugDataUpdate {
-  id: string;
-  data: DrugData;
-}
-
-interface RecipeForRequest {
-  care_number: string;
-  recipe_number: string;
-  date: string;
-  validate: string;
-  handover: string;
-  type: string;
-  drug: RecipesForRequest[]
-}
-
-interface RecipesForRequest {
-  drug_id: string;
-  value: number;
-  use:string;
-  embalming:number;
-  tuslah:number;
-  total_price:number;
-}
+import type { DrugData, RequestBodyDrugDataUpdate, RecipeForRequest, RecipeCompoundForRequest } from "@/types/pharmacy"
 
 export async function createDrugData(token: string | null, drug: DrugData) {
   const response = await fetch(`${import.meta.env.VITE_API_PATH}/pharmacy/create-drug-data`, {
@@ -99,6 +64,40 @@ export async function createRecipe(token: string | null, drug: RecipeForRequest)
       "Authorization": `Bearer ${token}`
     },
     body: JSON.stringify(drug)
+  })
+
+  return response
+}
+
+export async function createRecipeCompound(token: string | null, drug: RecipeCompoundForRequest) {
+  const response = await fetch(`${import.meta.env.VITE_API_PATH}/pharmacy/create-recipe-compound`, {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${token}`
+    },
+    body: JSON.stringify(drug)
+  })
+
+  return response
+}
+
+export async function getCurrentRecipeNumber(token: string | null, date: string) {
+  const response = await fetch(`${import.meta.env.VITE_API_PATH}/pharmacy/get-current-recipe-number?date=${date.split("T")[0]}`, {
+    method: "GET",
+    headers: {
+      "Authorization": `Bearer ${token}`
+    },
+  })
+
+  return response
+}
+
+export async function getRecipeNumber(token: string | null, care: string) {
+  const response = await fetch(`${import.meta.env.VITE_API_PATH}/pharmacy/get-recipe-number?care_number=${care}`, {
+    method: "GET",
+    headers: {
+      "Authorization": `Bearer ${token}`
+    },
   })
 
   return response

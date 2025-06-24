@@ -33,5 +33,5 @@ export function formatDatetime(date: Date, time: string | null): string {
 
   const timeFormatted = time ?? `${hours}:${minutes}`
 
-  return `${year}-${month}-${day} ${timeFormatted}`
+  return `${year}-${month}-${day}T${timeFormatted}`
 }

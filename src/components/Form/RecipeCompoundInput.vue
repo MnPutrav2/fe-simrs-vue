@@ -1,14 +1,16 @@
 <script setup lang="ts">
-import { getDrugData } from '@/lib/api/pharmacy';
-import { nextTick, reactive, ref } from 'vue';
-import { loopSumCompound } from '@/lib/drugSum';
-import type { Recipe, Drug, RecipeCompound, RecipeRequest } from '@/types/pharmacy';
-
+import { createRecipeCompound, getCurrentRecipeNumber, getDrugData, getRecipeNumber } from '@/lib/api/pharmacy';
+import { nextTick, onBeforeMount, reactive, ref, watch } from 'vue';
+import { loopSumCompound, sum } from '@/lib/drugSum';
+import type { Drug, RecipeCompound, RecipeCompoundForRequest } from '@/types/pharmacy';
+import { formatDate, formatDatetime } from '@/lib/formatDate';
+import { recipeNumber } from '@/lib/careNumber';
 
 // Define variabels
 const props = defineProps(['data'])
-const recipes = ref<Recipe[]>([])
 const drugs = ref<Drug[]>([])
+const recipeType = ref(false)
+const date = new Date()
 const recipeCompounds = ref<RecipeCompound[]>([])
 const indexData = ref<number>(0)
 const indexName = ref<string | null>(null)
@@ -18,13 +20,17 @@ const embalmingMap = reactive<Record<string, number>>({})
 const tuslahMap = reactive<Record<string, number>>({})
 const pageScroll = ref<HTMLElement | null>()
 const searchDrug = ref<string>("")
-const recipeRequest = reactive<RecipeRequest>({
+const recipeRequest = reactive<RecipeCompoundForRequest>({
   care_number: props.data,
   recipe_number: "",
-  drug: recipes.value
+  date: formatDatetime(date, null),
+  validate: formatDatetime(date, "00:00"),
+  handover: formatDatetime(date, "00:00"),
+  type: "create",
+  recipes: recipeCompounds.value
 })
 const recipeCompound = ref<RecipeCompound>({
-  name: "",
+  recipe_name: "",
   value: 0,
   use: "",
   drug: []
@@ -35,8 +41,12 @@ function scroll() {
   pageScroll.value?.scrollIntoView({behavior: "smooth"})
 }
 
+function resetForm() {
+  recipeCompounds.value = []
+}
+
 function removeRecipeCompound(id: string) {
-  recipeCompounds.value = recipeCompounds.value.filter(r => r.name !== id)
+  recipeCompounds.value = recipeCompounds.value.filter(r => r.recipe_name !== id)
 
   indexName.value = null
 }
@@ -48,8 +58,22 @@ function drugRec(capacity: number, fill: number, content: number): number {
 }
 
 // Handler function
-function handleCreateRecipe() {
-  console.log(recipeRequest)
+async function handleCreateRecipe() {
+  const response = await createRecipeCompound(localStorage.getItem('token'), recipeRequest)
+  const json = await response.json()
+
+  try {
+
+    if (response.status === 201) {
+      alert("Berhasil membuat resep!")
+      resetForm()
+    }else{
+      alert(json.errors)
+    }
+
+  } catch(error) {
+    console.log(error)
+  }
 }
 
 async function handleGetDrugData() {
@@ -83,7 +107,7 @@ function handleCreateRecipeCompound() {
   recipeCompounds.value.push({...recipeCompound.value})
 
   recipeCompound.value = {
-    name: "",
+    recipe_name: "",
     value: 0,
     use: "",
     drug: []
@@ -97,9 +121,57 @@ function handleAddDrugCompound(id: Drug) {
 
   const res = drugRec(id.capacity, indexValue.value, value)
 
-  recipeCompounds.value[indexData.value].drug.push({name: id.name, value: res, embalming: embalming, tuslah: tuslah, price: id.price})
+  recipeCompounds.value[indexData.value].drug.push({name: id.name, drug_id: id.id, value: res, embalming: embalming, tuslah: tuslah, price: sum(res, id.price, embalming, tuslah)})
 }
 
+async function handleGetCurrentRecipeNumber() {
+  const response = await getCurrentRecipeNumber(localStorage.getItem('token'), recipeRequest.date)
+  const json = await response.json()
+
+  try {
+
+    if (response.status === 200) {
+      recipeRequest.recipe_number = recipeNumber(new Date(recipeRequest.date), json.response)
+    }else{
+      alert(json.errors)
+    }
+
+  } catch(error) {
+    console.log(error)
+  }
+}
+
+async function handleGetRecipeNumber() {
+  const response = await getRecipeNumber(localStorage.getItem('token'), recipeRequest.care_number)
+  const json = await response.json()
+
+  try {
+
+    if (response.status === 200) {
+      recipeRequest.recipe_number = json.response
+    }else{
+      alert(json.errors)
+    }
+
+  } catch(error) {
+    console.log(error)
+  }
+}
+
+// Wacher
+watch(recipeType, async (val) => {
+  val ? await handleGetRecipeNumber() : await handleGetCurrentRecipeNumber()
+  recipeRequest.type = val ? "add" : "create"
+})
+
+watch(() => recipeRequest.date, async () => {
+  await handleGetCurrentRecipeNumber()
+})
+
+// Before page view
+onBeforeMount(async () => {
+  await handleGetCurrentRecipeNumber()
+})
 </script>
 
 <template>
@@ -124,6 +196,18 @@ function handleAddDrugCompound(id: Drug) {
               </div>
               <input type="text" id="ss" v-model="recipeRequest.recipe_number" placeholder="resep">
             </div>
+            <div style="padding: 0.5rem;">
+              <div style="margin-bottom: 0.5rem;">
+                <label for="ck">Timpa resep</label>
+              </div>
+              <input type="checkbox" id="ck" v-model="recipeType" placeholder="resep">
+            </div>
+            <div style="padding: 0.5rem;">
+              <div style="margin-bottom: 0.5rem;">
+                <label for="da">Tanggal resep</label>
+              </div>
+              <input type="datetime-local" id="da" v-model="recipeRequest.date" placeholder="resep">
+            </div>
             <button>Save</button>
           </div>
         </form>
@@ -138,7 +222,7 @@ function handleAddDrugCompound(id: Drug) {
               <div style="margin-bottom: 0.5rem;">
                 <label for="nr">Nama racikan</label>
               </div>
-              <input type="text" id="nr" v-model="recipeCompound.name" placeholder="no rawat">
+              <input type="text" id="nr" v-model="recipeCompound.recipe_name" placeholder="nama racikan">
             </div>
             <div style="padding: 0.5rem;">
               <div style="margin-bottom: 0.5rem;">
@@ -150,7 +234,7 @@ function handleAddDrugCompound(id: Drug) {
               <div style="margin-bottom: 0.5rem;">
                 <label for="d">Aturan pakai</label>
               </div>
-              <input type="text" id="d" v-model="recipeCompound.use" placeholder="pakai">
+              <input type="text" id="d" v-model="recipeCompound.use" placeholder="aturan pakai">
             </div>
             <button>Save</button>
           </div>
@@ -171,12 +255,12 @@ function handleAddDrugCompound(id: Drug) {
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(rec, index) in recipeCompounds" :key="rec.name">
+            <tr v-for="(rec, index) in recipeCompounds" :key="rec.recipe_name">
               <td>
-                <button class="button-action" @click="removeRecipeCompound(rec.name)">Delete</button>
-                <button class="button-action" @click="handleInputObat(index, rec.name, rec.value)">Input obat</button>
+                <button class="button-action" @click="removeRecipeCompound(rec.recipe_name)">Delete</button>
+                <button class="button-action" @click="handleInputObat(index, rec.recipe_name, rec.value)">Input obat</button>
               </td>
-              <td>{{ rec.name }}</td>
+              <td>{{ rec.recipe_name }}</td>
               <td>{{ rec.value }}</td>
               <td>{{ rec.use }}</td>
               <td>

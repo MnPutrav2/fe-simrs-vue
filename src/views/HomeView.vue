@@ -49,9 +49,6 @@ onBeforeMount(async () => {
 
 <template>
   <main class="center">
-    <PopupMenu v-if="open" :state="open">
-      <button @click="open = false" aria-label="Close menu">Close</button>
-    </PopupMenu>
     <Menus>
       <section class="anim-slide cover">
         <Navbar />

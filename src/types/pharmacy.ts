@@ -8,6 +8,16 @@ export interface RecipeForRequest {
   drug: RecipesForRequest[]
 }
 
+export interface RecipeCompoundForRequest {
+  care_number: string;
+  recipe_number: string;
+  date: string;
+  validate: string;
+  handover: string;
+  type: string;
+  recipes: RecipeCompound[]
+}
+
 export interface Recipe {
   id: string;
   name: string;
@@ -43,6 +53,7 @@ export interface Drug {
 
 export interface DrugRecipeCompound {
   name: string;
+  drug_id:  string;
   value: number;
   embalming: number;
   tuslah: number;
@@ -50,7 +61,7 @@ export interface DrugRecipeCompound {
 }
 
 export interface RecipeCompound {
-  name: string;
+  recipe_name: string;
   value: number;
   use: string;
   drug: DrugRecipeCompound[]

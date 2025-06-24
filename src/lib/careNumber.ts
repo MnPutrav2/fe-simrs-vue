@@ -10,3 +10,10 @@ export function regNumber(length: number): string {
 
   return reg
 }
+
+export function recipeNumber(date: Date, length: number): string {
+  const dates: string = `R${date.getFullYear()}${String(date.getMonth() + 1).padStart(2, '0')}${String(date.getDate()).padStart(2, '0')}`
+  const lt: string = String(length + 1).padStart(5, "0")
+
+  return `${dates}${lt}`
+}

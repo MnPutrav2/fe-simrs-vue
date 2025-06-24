@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { createRecipe, getDrugData } from '@/lib/api/pharmacy';
-import { computed, reactive, ref } from 'vue';
+import { createRecipe, getCurrentRecipeNumber, getDrugData, getRecipeNumber } from '@/lib/api/pharmacy';
+import { onBeforeMount, reactive, ref, watch } from 'vue';
 import { sum, loopSum } from '@/lib/drugSum';
-import { formatDatetime } from '@/lib/formatDate';
+import { formatDate, formatDatetime } from '@/lib/formatDate';
 import type { Recipe, RecipeForRequest, Drug, RecipesForRequest } from '@/types/pharmacy';
+import { recipeNumber } from '@/lib/careNumber';
 
 // Define variabels
 const props = defineProps(['data'])
@@ -20,10 +21,10 @@ const searchDrug = ref<string>("")
 const recipeRequest = reactive<RecipeForRequest>({
   care_number: props.data,
   recipe_number: "",
-  date: "",
+  date: formatDatetime(date, null),
   validate: formatDatetime(date, "00:00"),
   handover: formatDatetime(date, "00:00"),
-  type: recipeType.value ? "add" : "create",
+  type: "create",
   drug: recipesForRequest.value
 })
 
@@ -101,6 +102,54 @@ async function handleGetDrugData() {
   }
 }
 
+async function handleGetCurrentRecipeNumber() {
+  const response = await getCurrentRecipeNumber(localStorage.getItem('token'), recipeRequest.date)
+  const json = await response.json()
+
+  try {
+
+    if (response.status === 200) {
+      recipeRequest.recipe_number = recipeNumber(new Date(recipeRequest.date), json.response)
+    }else{
+      alert(json.errors)
+    }
+
+  } catch(error) {
+    console.log(error)
+  }
+}
+
+async function handleGetRecipeNumber() {
+  const response = await getRecipeNumber(localStorage.getItem('token'), recipeRequest.care_number)
+  const json = await response.json()
+
+  try {
+
+    if (response.status === 200) {
+      recipeRequest.recipe_number = json.response
+    }else{
+      alert(json.errors)
+    }
+
+  } catch(error) {
+    console.log(error)
+  }
+}
+
+// Wacher
+watch(recipeType, async (val) => {
+  val ? await handleGetRecipeNumber() : await handleGetCurrentRecipeNumber()
+  recipeRequest.type = val ? "add" : "create"
+})
+
+watch(() => recipeRequest.date, async () => {
+  await handleGetCurrentRecipeNumber()
+})
+
+// Before page view
+onBeforeMount(async () => {
+  await handleGetCurrentRecipeNumber()
+})
 </script>
 
 <template>

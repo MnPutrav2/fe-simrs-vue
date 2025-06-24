@@ -1,29 +1,5 @@
 import { ref } from "vue";
-
-interface Recipe {
-  id: string;
-  name: string;
-  value: number;
-  use:string;
-  embalming:number;
-  tuslah:number;
-  price:number;
-}
-
-interface RecipeCompound {
-  name: string;
-  value: number;
-  use: string;
-  drug: DrugRecipeCompound[]
-}
-
-interface DrugRecipeCompound {
-  name: string;
-  value: number;
-  embalming: number;
-  tuslah: number;
-  price: number;
-}
+import type { RecipeCompound, Recipe } from "@/types/pharmacy";
 
 export function sum(value: number, price: number, embalming: number, tuslah: number): number {
   const total = ref<number>(value * price + embalming + tuslah)
