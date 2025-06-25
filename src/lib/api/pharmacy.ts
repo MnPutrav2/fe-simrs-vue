@@ -102,3 +102,14 @@ export async function getRecipeNumber(token: string | null, care: string) {
 
   return response
 }
+
+export async function getRecipeData(token: string | null, date1: string, date2: string) {
+  const response = await fetch(`${import.meta.env.VITE_API_PATH}/pharmacy/get-recipe-data?date1=${date1.split("T")[0]}&date2=${date2.split("T")[0]}`, {
+    method: "GET",
+    headers: {
+      "Authorization": `Bearer ${token}`
+    },
+  })
+
+  return response
+}

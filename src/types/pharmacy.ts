@@ -110,3 +110,12 @@ export interface Distributor {
   name: string;
   address: string;
 }
+
+export interface RecipeData {
+  recipe_id: string;
+  care_number: string;
+  name: string;
+  date: string;
+  validate: string;
+  handover: string;
+}
