@@ -11,6 +11,11 @@ const router = useRouter()
 const route = useRoute()
 
 interface pathData {
+  group: string
+  path: pathGroup[]
+}
+
+interface pathGroup {
   name: string
   path: string
 }
@@ -41,10 +46,17 @@ async function userPages() {
   }
 }
 
+function routing(path: string) {
+  router.push(path)
+  handlePath()
+}
+
 function handlePath() {
-  if (route.path !== '/' && !pathData.value.find(p => p.path === route.path)) {
-    router.push('/')
-  }
+  // pathData.value.forEach(item => {
+  //   if (route.path !== '/' && !item.path.find(p => p.path === route.path)) {
+  //       router.push('/')
+  //     }
+  // })
 
   clearGlobalMR()
 }
@@ -66,7 +78,11 @@ onBeforeMount(async () => {
     <div style="width: 100%; height: 90%;" class="scroll">
       <ul>
         <li v-for="(path, index) in pathData" :key="index" class="path">
-          <button class="menu-button" :class="route.path == path.path ? 'menu-button-active' : ''" @click="router.push(path.path), handlePath()">{{ path.name }}</button>
+          <details v-if="path.group != '-'">
+            <summary>{{ path.group }}</summary>
+            <button v-for="r in path.path" :key="r.name" class="menu-button" :class="route.path == r.path ? 'menu-button-active' : ''" @click="routing(r.path)">{{ r.name }}</button>
+          </details>
+          <button v-else v-for="r in path.path" :key="r.name" class="menu-button" :class="route.path == r.path ? 'menu-button-active' : ''" @click="routing(r.path)">{{ r.name }}</button>
         </li>
       </ul>
     </div>
@@ -127,5 +143,38 @@ onBeforeMount(async () => {
   padding: 0.5rem;
   color: var(--font-color);
   background-color: var(--menu-color);
+}
+
+details {
+  margin: 0.5rem 0rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-left: 0.5rem;
+  color: var(--font-color-sec);
+}
+
+summary::marker,
+summary::-webkit-details-marker {
+  display: none;
+}
+
+/* Tambahkan panah custom */
+summary {
+  position: relative;
+  margin-bottom: 0.5rem;
+  cursor: pointer;
+  list-style: none;
+}
+
+summary::before {
+  content: "›"; /* panah ke kanan */
+  position: absolute;
+  right: 0;
+  transition: transform 0.2s ease;
+}
+
+/* Saat <details> dibuka, putar panah */
+details[open] summary::before {
+  transform: rotate(90deg); /* jadikan panah ke bawah */
 }
 </style>

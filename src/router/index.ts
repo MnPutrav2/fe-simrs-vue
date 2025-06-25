@@ -9,6 +9,7 @@ import Ambulatory from '@/components/Ambulatory.vue'
 import Logs from '@/components/Logs.vue'
 import DrugDatas from '@/components/Pharmacy/DrugDatas.vue'
 import RecipeInput from '@/components/Form/RecipeInput.vue'
+import Recipes from '@/components/Pharmacy/Recipes.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -24,14 +25,20 @@ const router = createRouter({
           component: First
         },
         {
-          path: 'patient-registration',
-          name: 'patient-registration',
-          component: RegisterPatient
-        },
-        {
-          path: 'registration',
-          name: 'registration',
-          component: Register
+          path: 'register',
+          name:'register',
+          children: [
+            {
+              path: 'patient-registration',
+              name: 'patient-registration',
+              component: RegisterPatient
+            },
+            {
+              path: 'service-registration',
+              name: 'service-registration',
+              component: Register
+            },
+          ]
         },
         {
           path: 'ambulatory-care',
@@ -61,7 +68,12 @@ const router = createRouter({
               path: 'drug-datas',
               name: 'drug-datas',
               component: DrugDatas
-            }
+            },
+            {
+              path: 'recipes',
+              name: 'recipes',
+              component: Recipes
+            },
           ]
         }
       ]

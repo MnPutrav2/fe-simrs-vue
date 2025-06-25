@@ -75,6 +75,7 @@ async function handleCreateRegister() {
   try {
     if (response.status === 201) {
       await handleGetRegister()
+      await handleGetCareNumber()
       alert("Data berhasil dibuat")
     } else {
       alert(json.errors)
@@ -121,6 +122,7 @@ async function handleDeleteRegister(care_num: string) {
   try {
     if (response.status === 200) {
       await handleGetRegister()
+      await handleGetCareNumber()
       alert("Data berhasil dihapus")
     } else {
       console.log(json.errors)
