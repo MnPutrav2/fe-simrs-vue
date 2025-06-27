@@ -6,6 +6,8 @@
 body {
   background-color: var(--background-color);
   color: var(--font-color);
+  font-size: var(--font-size);
+  font-family: var(--font-family);
 }
 
 main {
@@ -15,6 +17,7 @@ main {
 
 button {
   cursor: pointer;
+  font-size: var(--font-size);
 }
 
 .center {
@@ -70,6 +73,10 @@ button {
   margin-top: 0.5rem;
 }
 
+input {
+  font-size: var(--font-size);
+}
+
 .input-field {
   padding: 0.5rem;
   display: flex;
@@ -85,7 +92,8 @@ button {
 }
 
 .input-field input, .input-field select {
-  min-width: 10rem;
+  min-width: 2rem;
+  font-size: var(--font-size);
 }
 
 .anim-slide {
@@ -121,8 +129,8 @@ button {
 }
 
 .table-custom td {
-  padding: 0.5rem;
-  min-width: 10rem;
+  padding: 0.2rem;
+  min-width: 8rem;
 }
 
 .table-custom > tbody > tr:nth-child(odd) {
@@ -130,7 +138,7 @@ button {
 }
 
 .button-action {
-  margin: 0.5rem;
+  margin: 0.2rem;
   padding: 0.3rem;
   border: 1px solid var(--line-color);
   color: var(--font-color);
@@ -148,7 +156,7 @@ button {
   z-index: 2;
   overflow-y: scroll;
   scrollbar-width: thin;
-  font-size: 0.8rem;
+  font-size: var(--font-size);
 }
 
 .find-input > ul {

@@ -191,7 +191,7 @@ onBeforeMount(async ()=> {
 
           <div class="input-field">
             <div class="cover">
-              <label for="com">Isi/Box</label>
+              <label for="com">Komposisi</label>
             </div>
             <span style="padding-right: 0.5rem;">:</span>
             <input type="text" id="com" placeholder="komposisi" v-model="drug.composition" required>

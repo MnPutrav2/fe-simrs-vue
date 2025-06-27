@@ -3,7 +3,7 @@ import { createRecipeCompound, getCurrentRecipeNumber, getDrugData, getRecipeNum
 import { nextTick, onBeforeMount, reactive, ref, watch } from 'vue';
 import { loopSumCompound, sum } from '@/lib/drugSum';
 import type { Drug, RecipeCompound, RecipeCompoundForRequest } from '@/types/pharmacy';
-import { formatDate, formatDatetime } from '@/lib/formatDate';
+import { formatDatetime } from '@/lib/formatDate';
 import { recipeNumber } from '@/lib/careNumber';
 
 // Define variabels

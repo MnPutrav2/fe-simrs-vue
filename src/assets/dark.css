@@ -3,9 +3,11 @@
     --background-color-transparent: rgba(138, 138, 138, 0.307);
     --menu-color:  rgb(39, 39, 39);
     --font-color: rgb(235, 245, 255);
-    --font-color-sec: rgb(174, 174, 174);
+    --font-color-sec: rgb(113, 113, 113);
     --line-color: white;
     --line-color-transparent: rgba(255, 255, 255, 0.24);
     --scroll-color: black transparent;
     --table-color: rgba(129, 129, 129, 0.057);
+    --font-size: 0.8rem;
+    --font-family: sans-serif;
 }

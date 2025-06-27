@@ -117,6 +117,7 @@ export interface RecipeData {
   name: string;
   date: string;
   validate: string;
+  validate_status:  boolean;
   handover: string;
 }
 
@@ -141,3 +142,7 @@ export interface DetailRecipe {
   total_price: number;
 }
 
+export interface ValidateTypeRecipe {
+  validate_status: boolean;
+  validate_date: string;
+}

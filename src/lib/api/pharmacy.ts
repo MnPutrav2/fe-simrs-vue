@@ -1,4 +1,4 @@
-import type { DrugData, RequestBodyDrugDataUpdate, RecipeForRequest, RecipeCompoundForRequest } from "@/types/pharmacy"
+import type { DrugData, RequestBodyDrugDataUpdate, RecipeForRequest, RecipeCompoundForRequest, ValidateTypeRecipe } from "@/types/pharmacy"
 
 export async function createDrugData(token: string | null, drug: DrugData) {
   const response = await fetch(`${import.meta.env.VITE_API_PATH}/pharmacy/create-drug-data`, {
@@ -131,6 +131,18 @@ export async function deleteDrugRecipes(token: string | null, recipe:  string, d
     headers: {
       "Authorization": `Bearer ${token}`
     },
+  })
+
+  return response
+}
+
+export async function validateRecipe(token: string | null, recipe:  string, val: ValidateTypeRecipe) {
+  const response = await fetch(`${import.meta.env.VITE_API_PATH}/pharmacy/validate-recipe?recipe_id=${recipe}`, {
+    method: "PUT",
+    headers: {
+      "Authorization": `Bearer ${token}`
+    },
+    body: JSON.stringify(val)
   })
 
   return response

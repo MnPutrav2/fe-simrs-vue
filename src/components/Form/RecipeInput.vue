@@ -25,12 +25,13 @@ const recipeRequest = reactive<RecipeForRequest>({
   validate: formatDatetime(date, "00:00:00"),
   handover: formatDatetime(date, "00:00:00"),
   type: "create",
-  drug: recipesForRequest.value
+  drug: []
 })
 
 // Define functions
 function removeRecipe(id: string) {
   recipes.value = recipes.value.filter(r => r.id !== id)
+  recipesForRequest.value = recipesForRequest.value.filter(r => r.drug_id !== id)
 }
 
 // Handler functions
@@ -69,7 +70,8 @@ function handleAddDrug(data: Drug) {
 }
 
 async function handleCreateRecipe() {
-  const response = await createRecipe(localStorage.getItem('token'), recipeRequest)
+  const res = {...recipeRequest, drug: recipesForRequest.value}
+  const response = await createRecipe(localStorage.getItem('token'), res)
   const json = await response.json()
 
   try {
