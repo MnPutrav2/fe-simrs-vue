@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { logsApi } from '@/lib/api/logs';
-import { formatDatetime } from '@/lib/formatDate';
+import { formatDatetime, viewedDateTime } from '@/lib/formatDate';
 import { onBeforeMount, ref } from 'vue';
 
 // Define variabels
 const date = new Date()
 const token: string | null = localStorage.getItem('token')
 const date1 = ref<string>(formatDatetime(date, "01:00:00"))
-const date2 = ref<string>(formatDatetime(date, "23:00:00"))
+const date2 = ref<string>(formatDatetime(date, "23:59:59"))
 const logs = ref<Logs[]>([])
 
 // External type
@@ -55,14 +55,14 @@ onBeforeMount(async () => {
               <label for="tgl1">Tanggal</label>
             </div>
             <span style="padding-right: 0.5rem;">:</span>
-            <input type="datetime-local" id="tgl1" v-model="date1" placeholder="tanggal">
+            <input type="datetime-local" step="1" id="tgl1" v-model="date1" placeholder="tanggal">
           </div>
           <div class="input-field">
             <div class="cover">
               <label for="tgl2">Tanggal</label>
             </div>
             <span style="padding-right: 0.5rem;">:</span>
-            <input type="datetime-local" id="tgl2" v-model="date2" placeholder="tanggal">
+            <input type="datetime-local" step="1" id="tgl2" v-model="date2" placeholder="tanggal">
           </div>
           <button type="submit" style="width: 2rem;">Cari</button>
         </div>
@@ -80,8 +80,8 @@ onBeforeMount(async () => {
         </thead>
         <tbody>
           <tr v-for="log in logs" :key="log.id" :class="log.level == 'WARN' ? 'warn' : log.level == 'ERROR' ? 'error' : 'info'">
-            <td>{{ log.date }}</td>
-            <td>{{ log.user == "0" ? "System" : log.user }}</td>
+            <td>{{ viewedDateTime(log.date) }}</td>
+            <td>{{ log.user == "" || log.user == "0" ? "SYSTEM" : log.user }}</td>
             <td>{{ log.level }}</td>
             <td>{{ log.message }}</td>
             <td>{{ log.path }}</td>

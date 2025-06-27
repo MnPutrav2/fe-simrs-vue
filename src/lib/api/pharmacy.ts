@@ -113,3 +113,25 @@ export async function getRecipeData(token: string | null, date1: string, date2: 
 
   return response
 }
+
+export async function getDrugRecipe(token: string | null, recipe: string) {
+  const response = await fetch(`${import.meta.env.VITE_API_PATH}/pharmacy/get-all-drug-recipe?recipe=${recipe}`, {
+    method: "GET",
+    headers: {
+      "Authorization": `Bearer ${token}`
+    },
+  })
+
+  return response
+}
+
+export async function deleteDrugRecipes(token: string | null, recipe:  string, drugID: string, comname: string) {
+  const response = await fetch(`${import.meta.env.VITE_API_PATH}/pharmacy/delete-drug-recipes?recipe_id=${recipe}&drug_id=${drugID}&compound_name=${comname}`, {
+    method: "DELETE",
+    headers: {
+      "Authorization": `Bearer ${token}`
+    },
+  })
+
+  return response
+}

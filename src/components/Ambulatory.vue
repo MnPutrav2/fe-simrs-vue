@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { createAmbulatoryCare, deleteAmbulatoryCare, getAmbulatoryCare, updateAmbulatoryCare } from '@/lib/api/ambulatory';
 import { getRegisters } from '@/lib/api/register';
-import { formatDate, formatDatetime } from '@/lib/formatDate';
+import { formatDate, formatDatetime, viewedDateTime } from '@/lib/formatDate';
 import { useGlobalMR } from '@/lib/globalData';
 import { resetForm } from '@/lib/resetForm';
 import { onBeforeMount, reactive, ref } from 'vue';
@@ -19,8 +19,8 @@ const limit_reg = ref<number>(5)
 const registerDatas = ref<RegistrationData[]>([])
 const pages = ref<HTMLElement | null>()
 const searchAmbulatory = ref<string | null>("")
-const dateSearch1 = ref<string>(formatDatetime(gl, "00:00"))
-const dateSearch2 = ref<string>(formatDatetime(gl, "23:59"))
+const dateSearch1 = ref<string>(formatDatetime(gl, "00:00:00"))
+const dateSearch2 = ref<string>(formatDatetime(gl, "23:59:00"))
 const ambulatoryDatas = ref<AmbulatoryCare[]>([])
 const editAction = ref<boolean>(false)
 const bool = ref<boolean>(false)
@@ -49,7 +49,7 @@ const ambulatoryData = reactive<AmbulatoryCareRequest>({
   weight: 0,
   spo2: 0,
   gcs: 0,
-  awareness: '',
+  awareness: 'Compos Mentis',
   complaint: '',
   examination: '',
   allergy: '',
@@ -135,8 +135,10 @@ async function handleGetRegister() {
 function handleEditAmbulatory(amb: AmbulatoryCare) {
   pages.value?.scrollIntoView({behavior: "smooth"})
 
-  const {officer_name, ...filter} = amb
+  const {officer_name, date, ...filter} = amb
   Object.assign(ambulatoryData, filter)
+
+  ambulatoryData.date = formatDatetime(new Date(amb.date), null)
 }
 
 async function handleDeleteAmbulatory(careNum: string, date: string) {
@@ -236,7 +238,7 @@ onBeforeMount(async () => {
             </div>
             <span style="padding-right: 0.5rem;">:</span>
             <div class="center">
-              <input type="datetime-local" id="date" v-model="ambulatoryData.date" placeholder="date" required>
+              <input type="datetime-local" step="1" id="date" v-model="ambulatoryData.date" placeholder="date" required>
               <button style="font-size: 0.5rem;" type="button" @click="autoDate(bool = !bool)">{{ bool ? 'Otomatic Clock' : 'Manual Clock' }}</button>
             </div>
           </div>
@@ -384,13 +386,13 @@ onBeforeMount(async () => {
             <div style="margin-bottom: 0.5rem;">
               <label for="dt1">Tanggal</label>
             </div>
-            <input type="datetime-local" id="dt1" v-model="dateSearch1" placeholder="date">
+            <input type="datetime-local" step="1" id="dt1" v-model="dateSearch1" placeholder="date">
           </div>
           <div style="padding: 0.5rem;">
             <div style="margin-bottom: 0.5rem;">
               <label for="dt2">s.d</label>
             </div>
-            <input type="datetime-local" id="dt2" v-model="dateSearch2" placeholder="date">
+            <input type="datetime-local" step="1" id="dt2" v-model="dateSearch2" placeholder="date">
           </div>
           <div style="padding: 0.5rem;">
             <div style="margin-bottom: 0.5rem;">
@@ -437,7 +439,7 @@ onBeforeMount(async () => {
             </td>
             <td>{{ amb.care_number }}</td>
             <td>{{ amb.name }}</td>
-            <td>{{ amb.date }}</td>
+            <td>{{ viewedDateTime(amb.date) }}</td>
             <td>{{ amb.medical_record }}</td>
             <td>{{ amb.officer_name }}</td>
             <td>{{ amb.body_temperature }}</td>

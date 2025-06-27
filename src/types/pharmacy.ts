@@ -119,3 +119,25 @@ export interface RecipeData {
   validate: string;
   handover: string;
 }
+
+export interface RecipeType {
+	recipe_type: string;
+	compound_name: string;
+	data: DetailRecipe[]
+}
+
+export interface DetailRecipe {
+  recipe_id: string;
+  drug_id: string;
+  drug_name: string;
+  validate_status: boolean;
+  compound_name: string;
+  compound_value: number;
+  recipe_type: string;
+  value: number;
+  use: string;
+  embalming: number;
+  tuslah: number;
+  total_price: number;
+}
+

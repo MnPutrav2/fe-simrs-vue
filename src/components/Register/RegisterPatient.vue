@@ -4,6 +4,7 @@ import { createPatient, deletePatient, getCurrentMedicalRecord, getPatient, upda
 import { medicalRecord } from '@/lib/medicalRecordFormat';
 import { onBeforeMount, reactive, ref, watch } from 'vue'
 import type { Patient } from '@/types/patient';
+import { viewedDate } from '@/lib/formatDate';
 
 // Define variabels
 const search = ref<string>("")
@@ -642,7 +643,7 @@ onBeforeMount(async () => {
             </td>
             <td>{{ patient.medical_record }}</td>
             <td>{{ patient.name }}</td>
-            <td>{{ `${patient.birth_place}, ${patient.birth_date}` }}</td>
+            <td>{{ `${patient.birth_place}, ${viewedDate(patient.birth_date)}` }}</td>
             <td>{{ patient.gender }}</td>
             <td>{{ patient.address }}</td>
             <td>{{ patient.nik }}</td>

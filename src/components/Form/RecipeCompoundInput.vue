@@ -24,8 +24,8 @@ const recipeRequest = reactive<RecipeCompoundForRequest>({
   care_number: props.data,
   recipe_number: "",
   date: formatDatetime(date, null),
-  validate: formatDatetime(date, "00:00"),
-  handover: formatDatetime(date, "00:00"),
+  validate: formatDatetime(date, "00:00:00"),
+  handover: formatDatetime(date, "00:00:00"),
   type: "create",
   recipes: recipeCompounds.value
 })
@@ -206,7 +206,7 @@ onBeforeMount(async () => {
               <div style="margin-bottom: 0.5rem;">
                 <label for="da">Tanggal resep</label>
               </div>
-              <input type="datetime-local" id="da" v-model="recipeRequest.date" placeholder="resep">
+              <input type="datetime-local" id="da" step="1" v-model="recipeRequest.date" placeholder="resep">
             </div>
             <button>Save</button>
           </div>

@@ -1,5 +1,3 @@
-import { ref } from "vue"
-
 export function formatDate(date: Date): string {
   const defaultDate: Date = date
   const datez: string = defaultDate.getDate().toString()
@@ -30,8 +28,35 @@ export function formatDatetime(date: Date, time: string | null): string {
   const day = String(date.getDate()).padStart(2, '0')
   const hours = String(date.getHours()).padStart(2, '0')
   const minutes = String(date.getMinutes()).padStart(2, '0')
+  const seconds = String(date.getSeconds()).padStart(2, '0')
 
-  const timeFormatted = time ?? `${hours}:${minutes}`
+  let timeFormatted = `${hours}:${minutes}:${seconds}`
+
+  if (time) {
+    // Jika time diberikan, pastikan dalam format HH:mm:ss
+    const parts = time.split(':')
+    if (parts.length === 2) {
+      timeFormatted = `${parts[0]}:${parts[1]}:00` // tambahkan detik jika tidak ada
+    } else if (parts.length === 3) {
+      timeFormatted = time // sudah lengkap
+    } else {
+      console.warn('formatDatetime: time format tidak valid, gunakan HH:mm atau HH:mm:ss')
+    }
+  }
 
   return `${year}-${month}-${day}T${timeFormatted}`
+}
+
+
+export function viewedDateTime(date: string): string {
+  const cutDate = date.split('T')
+  const cutTime = cutDate[1].split('Z')
+
+  return `${cutDate[0]} ${cutTime[0]}`
+}
+
+export function viewedDate(date: string): string {
+  const cutDate = date.split('T')
+
+  return `${cutDate[0]}`
 }

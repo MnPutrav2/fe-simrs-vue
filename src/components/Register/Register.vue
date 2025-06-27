@@ -2,7 +2,7 @@
 import { getPatient } from '@/lib/api/patient'
 import { createRegister, deleteRegister, getCurrentCareNumber, getCurrentRegisterNumber, getRegisters } from '@/lib/api/register';
 import { careNumber, regNumber } from '@/lib/careNumber';
-import { formatDate } from '@/lib/formatDate';
+import { formatDate, viewedDate } from '@/lib/formatDate';
 import { onBeforeMount, reactive, ref, watch } from 'vue'
 import type { RegistrationData, RegisterData } from '@/types/register';
 import type { Patient, Doctor } from '@/types/patient';
@@ -61,6 +61,13 @@ interface Common {
 }
 
 // Define function
+function clearForm() {
+  registerData.medical_record = ''
+  registerData.payment_method = ''
+  registerData.policlinic = ''
+  registerData.doctor = ''
+}
+
 // Handler functions
 async function handleReg(mr: string) {
   ambulatoryCare.value?.scrollIntoView({behavior: 'smooth'})
@@ -76,6 +83,7 @@ async function handleCreateRegister() {
     if (response.status === 201) {
       await handleGetRegister()
       await handleGetCareNumber()
+      clearForm()
       alert("Data berhasil dibuat")
     } else {
       alert(json.errors)
@@ -301,7 +309,7 @@ onBeforeMount(async () => {
             </td>
             <td>{{ patient.medical_record }}</td>
             <td>{{ patient.name }}</td>
-            <td>{{ `${patient.birth_place}, ${patient.birth_date}` }}</td>
+            <td>{{ `${patient.birth_place}, ${viewedDate(patient.birth_date)}` }}</td>
             <td>{{ patient.gender }}</td>
             <td>{{ patient.address }}</td>
             <td>{{ patient.nik }}</td>
