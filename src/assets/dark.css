@@ -10,4 +10,6 @@
     --table-color: rgba(129, 129, 129, 0.057);
     --font-size: 0.8rem;
     --font-family: sans-serif;
+    --validate: rgb(0, 255, 0);
+    --invalidate: rgb(255, 0, 0);
 }

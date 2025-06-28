@@ -15,6 +15,38 @@ main {
   height: 100vh;
 }
 
+.button-clock {
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: center;
+  margin-left: 0.5rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  border: none;
+  cursor: pointer;
+  background-color: transparent;
+  display: inline-block;
+  color: var(--font-color);
+}
+
+.clock-active {
+  background-image: url('../assets/icons/clock.svg');
+}
+
+.clock-inactive {
+  background-image: url('../assets/icons/clock-warn.svg');
+}
+
+.validate {
+  color: var(--validate);
+  font-weight: bold;
+}
+
+.invalidate {
+  color: var(--invalidate);
+  font-weight: bold;
+}
+
 button {
   cursor: pointer;
   font-size: var(--font-size);

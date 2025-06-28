@@ -238,8 +238,10 @@ onBeforeMount(async () => {
             </div>
             <span style="padding-right: 0.5rem;">:</span>
             <div class="center">
-              <input type="datetime-local" step="1" id="date" v-model="ambulatoryData.date" placeholder="date" required>
-              <button style="font-size: 0.5rem;" type="button" @click="autoDate(bool = !bool)">{{ bool ? 'Otomatic Clock' : 'Manual Clock' }}</button>
+              <div class="center">
+                <input type="datetime-local" step="1" id="date" v-model="ambulatoryData.date" placeholder="tanggal">
+                <div :class="bool ? 'clock-inactive' : 'clock-active'" class="button-clock" @click="autoDate(bool = !bool)" role="button" tabindex="0"></div>
+              </div>
             </div>
           </div>
 

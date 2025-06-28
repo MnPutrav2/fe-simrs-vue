@@ -346,7 +346,7 @@ onBeforeMount(async () => {
             </td>
             <td>{{ rec.recipe_id }}</td>
             <td>{{ rec.care_number }}</td>
-            <td>{{ rec.validate_status ? 'Sudah' : 'Belum' }}</td>
+            <td :class="rec.validate_status ? 'validate' : 'invalidate'">{{ rec.validate_status ? 'Sudah' : 'Belum' }}</td>
             <td>{{ rec.name }}</td>
             <td>{{ viewedDateTime(rec.date) }}</td>
             <td>{{ viewedDateTime(rec.validate) }}</td>
@@ -366,8 +366,10 @@ onBeforeMount(async () => {
               <div style="margin-bottom: 0.5rem;">
                 <label for="dt1">Tanggal validasi</label>
               </div>
-              <input type="datetime-local" step="1" id="dtv" v-model="validateDate" placeholder="tanggal">
-              <button style="font-size: 0.5rem;" type="button" @click="autoDate(bool = !bool)">{{ bool ? 'Otomatic Clock' : 'Manual Clock' }}</button>
+              <div class="center">
+                <input type="datetime-local" step="1" id="dt1" v-model="validateDate" placeholder="tanggal">
+                <div :class="bool ? 'clock-inactive' : 'clock-active'" class="button-clock" @click="autoDate(bool = !bool)" role="button" tabindex="0"></div>
+              </div>
             </div>
             <button type="submit">Validasi</button>
           </div>
